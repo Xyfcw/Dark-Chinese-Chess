@@ -1,5 +1,8 @@
 # coding:utf-8
 from MyChess.Chess_Core import Chessman
+import random
+
+
 
 
 class Chessboard(object):
@@ -11,6 +14,9 @@ class Chessboard(object):
         self.__chessmans_hash = {}
         self.__history = {"red": {"chessman": None, "last_pos": None, "repeat": 0},
                           "black": {"chessman": None, "last_pos": None, "repeat": 0}}
+        self.lnotdark = []
+        self.ldark = []
+        self.dark_to_notdark = {}
 
     @property
     def is_red_turn(self):
@@ -32,17 +38,25 @@ class Chessboard(object):
     def chessmans_hash(self):
         return self.__chessmans_hash
 
-    def init_board(self):
-        red_rook_left = Chessman.Rook(" 车l红 ", "red_rook_left", True, self)
-        red_rook_left.add_to_board(0, 0)
+    def init_board(self): 
+        red_rook_left = Chessman.Rook(" 车l红 ", "red_rook_left", True, self, False)
+        self.lnotdark.append(red_rook_left)
+        dark_red_rook_left = Chessman.Rook(" 暗车l红 ", "dark_red_rook_left", True, self, True)
+        dark_red_rook_left.add_to_board(0, 0)
         red_rook_right = Chessman.Rook(" 车r红 ", "red_rook_right", True, self)
-        red_rook_right.add_to_board(8, 0)
+        self.lnotdark.append(red_rook_right)
+        dark_red_rook_right = Chessman.Rook(" 暗车r红 ", "dark_red_rook_right", True, self, True)
+        dark_red_rook_right.add_to_board(8, 0)
         black_rook_left = Chessman.Rook(
             " 车l黑 ", "black_rook_left", False, self)
-        black_rook_left.add_to_board(0, 9)
+        dark_black_rook_left = Chessman.Rook(
+            " 车l黑 ", "dark_black_rook_left", False, self)
+        dark_black_rook_left.add_to_board(0, 9)
         black_rook_right = Chessman.Rook(
             " 车r黑 ", "black_rook_right", False, self)
-        black_rook_right.add_to_board(8, 9)
+        dark_black_rook_right = Chessman.Rook(
+            " 车r黑 ", "dark_black_rook_right", False, self)
+        dark_black_rook_right.add_to_board(8, 9)
         red_knight_left = Chessman.Knight(
             " 马l红 ", "red_knight_left", True, self)
         red_knight_left.add_to_board(1, 0)
@@ -80,8 +94,11 @@ class Chessboard(object):
             " 象r黑 ", "black_elephant_right", False, self)
         black_elephant_right.add_to_board(6, 9)
         red_mandarin_left = Chessman.Mandarin(
-            " 仕l红 ", "red_mandarin_left", True, self)
-        red_mandarin_left.add_to_board(3, 0)
+            " 仕l红 ", "red_mandarin_left", True, self, False)
+        self.lnotdark.append(red_mandarin_left)
+        dark_red_mandarin_left = Chessman.Mandarin(
+            " 仕l红 ", "red_mandarin_left", True, self, True)
+        dark_red_mandarin_left.add_to_board(3, 0)
         red_mandarin_right = Chessman.Mandarin(
             " 仕r红 ", "red_mandarin_right", True, self)
         red_mandarin_right.add_to_board(5, 0)
@@ -115,6 +132,11 @@ class Chessboard(object):
         black_pawn_4.add_to_board(6, 6)
         black_pawn_5 = Chessman.Pawn(" 卒5黑 ", "black_pawn_5", False, self)
         black_pawn_5.add_to_board(8, 6)
+
+    def disruption(self, lnotdark, ldark):
+        random.shuffle(lnotdark)
+        for i in range(len(ldark)):
+            self.dark_to_notdark[ldark[i]] = lnotdark[i]
 
     def add_chessman(self, chessman, col_num, row_num):
         self.chessmans[col_num][row_num] = chessman
@@ -265,3 +287,7 @@ class Chessboard(object):
                     screen += "   .   "
             screen += "\r\n" * 3
         print(screen)
+
+
+
+
