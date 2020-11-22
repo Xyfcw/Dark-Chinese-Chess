@@ -258,26 +258,26 @@ class Cannon(Chessman):
 class Mandarin(Chessman):
     '''士'''
     def __init__(self, name_cn, name, is_red, chessboard, is_dark = False):
-        super(Mandarin, self).__init__(name_cn, name, is_red, chessboard, is_dark = False)
-        # self.__is_dark = is_dark
-        # if self.is_dark:
-        #     self._Chessman__left = 3
-        #     self._Chessman__right = 5
-        #     if self.is_red:
-        #         self._Chessman__top = 2
-        #         self._Chessman__bottom = 0
-        #     else:
-        #         self._Chessman__top = 9
-        #         self._Chessman__bottom = 7
-        # else:
-        #     self._Chessman__top = 9
-        #     self._Chessman__bottom = 0
-        #     self._Chessman__left = 0
-        #     self._Chessman__right = 8
-        self._Chessman__top = 9
-        self._Chessman__bottom = 0
-        self._Chessman__left = 0
-        self._Chessman__right = 8
+        super(Mandarin, self).__init__(name_cn, name, is_red, chessboard, is_dark)
+        # self.is_dark = is_dark
+        if self.is_dark:
+            self._Chessman__left = 3
+            self._Chessman__right = 5
+            if self.is_red:
+                self._Chessman__top = 2
+                self._Chessman__bottom = 0
+            else:
+                self._Chessman__top = 9
+                self._Chessman__bottom = 7
+        else:
+            self._Chessman__top = 9
+            self._Chessman__bottom = 0
+            self._Chessman__left = 0
+            self._Chessman__right = 8
+        # self._Chessman__top = 9
+        # self._Chessman__bottom = 0
+        # self._Chessman__left = 0
+        # self._Chessman__right = 8
 
 
     def calc_moving_list(self):

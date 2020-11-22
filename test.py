@@ -120,5 +120,28 @@ while True:
 '''
 
 
-a = Rect(1, 3, 2, 4)
-print(a.size)
+class Solution:
+    def moveZeroes(self, nums) -> None:
+        """
+        Do not return anything, modify nums in-place instead.
+        """
+        count = nums.count(0)
+        num = len(nums)
+        i = 0
+        for j in nums:
+            if j != 0:
+                nums[i] = j
+                i += 1
+        for i in range(num-1, num-count, -1):
+            nums[i] = 0
+        return nums
+
+# list = [0,1,0,3,12]
+# s = Solution
+# a = s.moveZeroes(list)
+# print(a)
+# a = range(5)
+# print(a)
+head = []
+if head is None:
+    print(head)
