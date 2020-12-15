@@ -1,6 +1,9 @@
 # coding:utf-8
 
 from MyChess.Chess_Core import Point
+from MyChess.Chess_Core import Chessboard
+
+
 
 
 def num_between(max_num, min_num, current):
@@ -27,7 +30,11 @@ class Chessman(object):
         self.__right = 8
         self.__is_alive = True
         self.__name_cn = name_cn
-        self.is_dark = is_dark
+        self.__is_dark = is_dark
+
+    @property
+    def is_dark(self):
+        return self.__is_dark
 
     @property
     def row_num(self):
@@ -81,8 +88,10 @@ class Chessman(object):
             print("the wrong postion")
 
     def move(self, col_num, row_num):
+        self.__chessboard.avoid_dui_jiang(self, col_num, row_num)
         if self.in_moving_list(col_num, row_num):
-            self.__chessboard.remove_chessman_source(
+
+            self.__chessboard.remove_chessman_source( #将自己从原来的位置抹去
                 self.__position.x, self.__position.y)
             self.__chessboard.update_history(self, col_num, row_num)
             self.__position.x = col_num
@@ -93,10 +102,12 @@ class Chessman(object):
             return False
 
     def in_moving_list(self, col_num, row_num):
+
         for point in self.__moving_list:
             if point.x == col_num and point.y == row_num:
                 return True
         return False
+
 
     def calc_moving_list(self):
         pass

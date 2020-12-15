@@ -5,16 +5,91 @@ import random
 import os.path
 from MyChess.Chess_Core import Chessboard
 # from MyChess.Chess_Core.Chessboard import lnotdark
-from MyChess.Chess_Core import Point
+# from MyChess.Chess_Core import Point
 from MyChess.Chess_Core import Chessman
 from pygame.locals import *
 
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 # (left, top, width, height)
-SCREENRECT = Rect(0, 0, 720, 800)
-# SCREENRECT = Rect(0, 0, 1440, 1600)
+# SCREENRECT = Rect(0, 0, 720, 800)
+SCREENRECT = Rect(0, 0, 720, 960)
 
+
+red_dead = []
+black_dead = []
+
+
+def draw_dead_chessman(chessman, screen):
+    red_new = True
+    black_new = True
+    name = chessman.name.split('_')[1]
+    if chessman.is_red:
+        if chessman.is_dark:
+            for i in range(len(red_dead)):
+                if 'dark' in red_dead[i]:
+                    red_dead[i] = add_one(red_dead[i])
+                    red_new = False
+                    break
+            if red_new:
+                red_dead.append('dark')
+        else:
+            for i in range(len(red_dead)):
+                if name in red_dead[i]:
+                    red_dead[i] = add_one(red_dead[i])
+                    red_new = False
+                    break
+            if red_new:
+                red_dead.append('red_' + name)
+    else:
+        if chessman.is_dark:
+            for i in range(len(black_dead)):
+                if 'dark' in black_dead[i]:
+                    black_dead[i] = add_one(black_dead[i])
+                    black_new = False
+                    break
+            if black_new:
+                black_dead.append('dark')
+        else:
+            for i in range(len(black_dead)):
+                if name in black_dead[i]:
+                    black_dead[i] = add_one(black_dead[i])
+                    black_new = False
+                    break
+            if black_new:
+                black_dead.append('black_' + name)
+
+    draw_dead_image(red_dead, black_dead, screen)
+
+def add_one(image_name):
+    if 'dark' in image_name:
+        if image_name.count('_') == 0:
+            name = image_name + '_2'
+        else:
+            current_num = image_name.split('_')[-1]
+            num = int(current_num)
+            num += 1
+            name = image_name.replace(current_num, str(num))
+    else:
+        if image_name.count('_') == 1:
+            name = image_name + '_2'
+        else:
+            current_num = image_name.split('_')[-1]
+            num = int(current_num)
+            num += 1
+            name = image_name.replace(current_num, str(num))
+    return name
+
+
+
+def draw_dead_image(red_dead, black_dead, screen):
+    for i in range(len(red_dead)):
+        screen.blit(load_image(red_dead[i] + ".jpg"), ((8-i) * 80, 0))
+    for j in range(len(black_dead)):
+        screen.blit(load_image(black_dead[j] + ".jpg"), (j * 80, 11 * 80))
+
+    # ball = load_image("red_pawn_2.png")  # 加载图片
+    # screen.blit(load_image("red_pawn_2.png"), (0, 11 * 80))
 
 def load_image(file):
     "loads an image, prepares it for play"
@@ -45,9 +120,9 @@ class Chessman_Sprite(pygame.sprite.Sprite):
         self.images = images
         self.image = self.images[0]
         self.rect = Rect(chessman.col_num * 80,
-                         (9 - chessman.row_num) * 80,  80,  80)
+                         (10 - chessman.row_num) * 80,  80,  80)
 
-    def move(self, col_num, row_num):
+    def move(self, col_num, row_num): #c,r为要去的位置
         old_col_num = self.chessman.col_num
         old_row_num = self.chessman.row_num
         is_correct_position = self.chessman.move(col_num, row_num)
@@ -125,26 +200,25 @@ def add_col_row(chessman, col_num, row_num):
     chessman.row_num = row_num
 
 def translate_hit_area(screen_x, screen_y):
-    return screen_x // 80, 9 - screen_y // 80
+    return screen_x // 80, 10 - screen_y // 80
 
 
 def main(winstyle=0):
 
     pygame.init()
+    # Pick the best color depth for a display mode
     bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    # create a graphical window
+    # Initialize a window or screen for display
     screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
     pygame.display.set_caption("揭棋")
-
     # create the background, tile the bgd image
-    bgdtile = load_image('boardchess.gif')
-    # bgdtile = load_image('timg.jpg')
+    # bgdtile = load_image('boardchess.gif')
+    bgdtile = load_image('qp.png')
     background = pygame.Surface(SCREENRECT.size)
     for x in range(0, SCREENRECT.width, bgdtile.get_width()):
         background.blit(bgdtile, (x, 0))
-    screen.blit(background, (0, 0))
-    pygame.display.flip()
-
+    screen.blit(background, (0, 0)) # blit(): draw many images onto another
+    pygame.display.flip() # flip(): Update the full display Surface to the screen
     cbd = Chessboard.Chessboard('000')
     cbd.init_board()
     cbd.get_bright_chessman()
@@ -154,10 +228,11 @@ def main(winstyle=0):
 
     # 生成chessman_sprite并且加到chessmans中
     creat_sprite_group(chessmans, cbd.chessmans_hash)
-    current_chessman = None
-    # 计算棋子行动路径
-    cbd.calc_chessmans_moving_list()
-    while not cbd.is_end():
+    current_chessman = None # 要移动的棋子
+
+    cbd.calc_chessmans_moving_list() # 计算棋子行动路径
+    count = 0 # 无吃子回合数
+    while not cbd.is_end(count):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -185,9 +260,11 @@ def main(winstyle=0):
                             else:
                                 success = current_chessman.move(
                                     col_num, row_num)
-                                # 如果成功移动
-                                if success:
+
+                                if success: # 成功移动棋子（吃子）
+                                    count = 0
                                     chessmans.remove(chessman_sprite)
+                                    draw_dead_chessman(chessman_sprite.chessman, screen)
                                     if current_chessman.chessman.is_dark:
                                         cbd.d_to_b[current_chessman.chessman].add_to_board(col_num, row_num)
                                         # add_col_row(cbd.lnotdark[0], col_num, row_num)
@@ -200,7 +277,9 @@ def main(winstyle=0):
                                         current_chessman = None
                         elif current_chessman != None and chessman_sprite is None:
                             success = current_chessman.move(col_num, row_num)
+                            # 成功移动棋子（没吃子）
                             if success:
+                                count += 0.5
                                 if current_chessman.chessman.is_dark:
                                     cbd.d_to_b[current_chessman.chessman].add_to_board(col_num, row_num)
                                     replace_sprite_group(chessmans, cbd.d_to_b[current_chessman.chessman])
@@ -209,6 +288,7 @@ def main(winstyle=0):
                                 else:
                                     current_chessman.is_selected = False
                                     current_chessman = None
+
         framerate.tick(20)
         # clear/erase the last drawn sprites
         chessmans.clear(screen, background)

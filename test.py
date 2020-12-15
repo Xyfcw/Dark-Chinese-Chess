@@ -1,5 +1,5 @@
-import pygame
-from pygame.locals import *
+# import pygame
+# from pygame.locals import *
 from sys import exit
 '''
 pygame.init()
@@ -142,6 +142,79 @@ class Solution:
 # print(a)
 # a = range(5)
 # print(a)
-head = []
-if head is None:
-    print(head)
+# head = []
+# if head is None:
+#     print(head)
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+
+
+# import tensorflow as tf
+# # Creates a graph.
+# a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a')
+# b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b')
+# c = tf.matmul(a, b)
+# # Creates a session with log_device_placement set to True.
+# sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+# # Runs the op.
+# print(sess.run(c))
+
+# -*- coding: utf-8 -*-
+# chessmans = [([1] * 3) for i in range(9)]
+
+# def quick_sort(s, l, r):
+#     if l < r:
+#         i = l,
+#
+#
+#
+# if __name__ == "__main__":
+#     print("请输入数列值，以空格分隔：")
+#     ln = list(map(lambda x:int(x), input().split(' ')))
+#     print("最长公共子序列之和为: ")
+#     print(ms(ln, 0, len(ln)-1))
+    # print(138+)
+
+'''
+import torch
+x_data=torch.tensor([[1.0],[2.0],[3.0]])
+y_data=torch.tensor([[2.0],[4.0],[6.0]])
+
+class LinearModel(torch.nn.Module):
+    def __init__(self):
+        super(LinearModel,self).__init__()
+        self.linear=torch.nn.Linear(1,1)
+
+    def forward(self,x):
+        y_pred=self.linear(x)
+        return y_pred
+model =LinearModel()
+
+criterion=torch.nn.MSELoss(size_average=False)
+optimizer=torch.optim.SGD(model.parameters(),lr=0.01)
+
+for epoch in range(1000):
+    y_pred=model(x_data)
+    loss=criterion(y_pred,y_data)
+    print(epoch,loss.item())
+
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+print('w=',model.linear.weight.item())
+print('b=',model.linear.bias.item())
+
+x_test=torch.Tensor([[4.0]])
+y_test=model(x_test)
+print('y_pred=',y_test.data)
+'''
+#include <iostream>
+#include <vector>
+#include <string>
+
+import torch
+ln = list(range(10))
+ln.remove(11)
+
+print(ln)

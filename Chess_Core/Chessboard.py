@@ -1,9 +1,12 @@
 # coding:utf-8
+import pygame
 from MyChess.Chess_Core import Chessman
 import random
+from enum import Enum
 
+from pygame.rect import Rect
 
-
+Winner = Enum("Winner", "red black draw")
 
 class Chessboard(object):
 
@@ -14,6 +17,7 @@ class Chessboard(object):
         self.__chessmans_hash = {}
         self.__history = {"red": {"chessman": None, "last_pos": None, "repeat": 0},
                           "black": {"chessman": None, "last_pos": None, "repeat": 0}}
+        self.winner = None
         self.list_red_bright = []
         self.list_red_dark = []
         self.list_black_bright = []
@@ -40,7 +44,7 @@ class Chessboard(object):
     def chessmans_hash(self):
         return self.__chessmans_hash
 
-    def init_board(self): 
+    def init_board(self):
         dark_red_rook_left = Chessman.Rook(
             " 暗车l红 ", "dark_red_rook_left", True, self, True)
         dark_red_rook_left.add_to_board(0, 0)
@@ -74,9 +78,9 @@ class Chessboard(object):
         dark_black_cannon_left = Chessman.Cannon(
             " 暗炮l黑 ", "dark_black_cannon_left", False, self, True)
         dark_black_cannon_left.add_to_board(1, 7)
-        dark_cannon_right = Chessman.Cannon(
-            " 暗炮r黑 ", "dark_cannon_right", False, self, True)
-        dark_cannon_right.add_to_board(7, 7)
+        dark_black_cannon_right = Chessman.Cannon(
+            " 暗炮r黑 ", "dark_black_cannon_right", False, self, True)
+        dark_black_cannon_right.add_to_board(7, 7)
         dark_red_elephant_left = Chessman.Elephant(
             " 暗相l红 ", "dark_red_elephant_left", True, self, True)
         dark_red_elephant_left.add_to_board(2, 0)
@@ -128,7 +132,7 @@ class Chessboard(object):
 
 
 
-    def get_bright_chessman(self): 
+    def get_bright_chessman(self):
         red_rook_left = Chessman.Rook(" 车l红 ", "red_rook_left", True, self)
         self.list_red_bright.append(red_rook_left)
 
@@ -162,11 +166,11 @@ class Chessboard(object):
         red_cannon_left = Chessman.Cannon(
             " 炮l红 ", "red_cannon_left", True, self)
         self.list_red_bright.append(red_cannon_left)
-        # red_cannon_left.add_to_board(1, 2)
+
         red_cannon_right = Chessman.Cannon(
             " 炮r红 ", "red_cannon_right", True, self)
         self.list_red_bright.append(red_cannon_right)
-        # red_cannon_right.add_to_board(7, 2)
+
         black_cannon_left = Chessman.Cannon(
             " 炮l黑 ", "black_cannon_left", False, self)
         self.list_black_bright.append(black_cannon_left)
@@ -237,8 +241,8 @@ class Chessboard(object):
         black_pawn_5 = Chessman.Pawn(" 卒5黑 ", "black_pawn_5", False, self)
         self.list_black_bright.append(black_pawn_5)
 
-        self.dark_to_bright(self.list_red_dark, self.list_red_bright, 
-            self.list_black_dark, self.list_black_bright)
+        self.dark_to_bright(self.list_red_dark, self.list_red_bright,
+                            self.list_black_dark, self.list_black_bright)
 
 
     def dark_to_bright(self, rd, rb, bd, bb):
@@ -248,6 +252,10 @@ class Chessboard(object):
         for i in range(15):
             self.d_to_b[rd[i]] = rb[i]
             self.d_to_b[bd[i]] = bb[i]
+
+    # def draw_dead_chessman(self, chessman):
+    #     ball = pygame.image.load('ball.png')  # 加载图片
+    #     screen.
 
     def add_chessman(self, chessman, col_num, row_num):
         self.chessmans[col_num][row_num] = chessman
@@ -305,22 +313,126 @@ class Chessboard(object):
         else:
             return "black"
 
-    def is_end(self):
-        return self.who_is_victor(6)
+    def move_to_str(self, x0, y0, x1, y1):
+        return str(x0) + str(y0) + str(x1) + str(y1)
 
-    def who_is_victor(self, repeat_num):
-        whos_turn = "red" if self.__is_red_turn else "black"
-        other_turn = "red" if not self.__is_red_turn else "black"
-        chessman = self.get_chessman_by_name("{0}_king".format(whos_turn))
-        if chessman != None:
-            if self.__history[other_turn]["repeat"] == repeat_num:
-                print("{0} is victor".format(whos_turn))
-                return True
-            else:
-                return False
+    def legal_moves(self):
+
+        # return all legal moves
+
+        _legal_moves = []
+        for chessman in self.__chessmans_hash.values():
+            if chessman.is_red == self.is_red_turn:
+                p = chessman.position
+                x0 = p.x
+                y0 = p.y
+                for point in chessman.moving_list:
+                    _legal_moves.append(self.move_to_str(x0, y0, point.x, point.y))
+        return _legal_moves
+
+    def avoid_dui_jiang(self, chessman, col_num, row_num):
+        red_king = self.get_chessman_by_name('red_king')
+        black_king = self.get_chessman_by_name('black_king')
+        if type(chessman) != type(red_king):
+            if red_king.position.x == black_king.position.x == chessman.position.x:
+                num = 0
+                for i in range(red_king.position.y + 1, black_king.position.y):
+                    if self.chessmans[red_king.position.x][i] != None:
+                        num += 1
+                if num == 1:
+                    t = chessman.moving_list.copy()
+                    for point in t:
+                        if point.x != chessman.position.x:
+                            chessman.moving_list.remove(point)
+        elif chessman == red_king:
+            checking = True
+            if col_num == black_king.position.x:
+                for i in range(row_num + 1, black_king.position.y):
+                    if self.chessmans[red_king.position.x][i] != None:
+                        checking = False
+                        break
+                if checking:
+                    for point in chessman.moving_list:
+                        if point.x == col_num and point.y == row_num:
+                            chessman.moving_list.remove(point)
+                            break
         else:
-            print("{0} is victor".format(other_turn))
-            return True
+            checking = True
+            if col_num == red_king.position.x:
+                for i in range(red_king.position.x + 1, row_num):
+                    if self.chessmans[red_king.position.x][i] != None:
+                        checking = False
+                        break
+                if checking:
+                    for point in chessman.moving_list:
+                        if point.x == col_num and point.y == row_num:
+                            chessman.moving_list.remove(point)
+                            break
+
+    def is_end(self, count):
+        red_king = self.get_chessman_by_name('red_king')
+        black_king = self.get_chessman_by_name('black_king')
+        # if not red_king:
+        #     self.winner = Winner.black
+        # elif not black_king:
+        #     self.winner = Winner.red
+        if count == 40:
+            print('it ends in a draw')
+            return True # 游戏结束，平局
+        # elif red_king.position.x == black_king.position.x:
+        #     checking = True
+        #     for i in range(red_king.position.y + 1, black_king.position.y):
+        #         if self.chessmans[red_king.position.x][i] != None:
+        #             checking = False
+        #             break
+        #
+        #     if checking: # 如果对将
+        #         if self.is_red_turn:
+        #             self.winner = Winner.red
+        #         else:
+        #             self.winner = Winner.black
+        # if self.winner is None:
+        else:
+            legal_moves = self.legal_moves()
+            if legal_moves == []:
+                if self.is_red_turn:
+                    self.winner = Winner.black
+                else:
+                    self.winner = Winner.red
+            elif self.is_red_turn:
+                target = black_king.position
+            else:
+                target = red_king.position
+            for move in legal_moves:
+                if int(move[2]) == target.x and int(move[3]) == target.y:
+                    if self.is_red_turn:
+                        self.winner = Winner.red
+                    else:
+                        self.winner = Winner.black
+                    print(target.x, target.y)
+                    break
+        if self.winner:
+            print("{0} is victor".format(self.winner))
+            # print(flag)
+        return self.winner != None
+
+    # def is_end(self):
+    #     return self.who_is_victor(6)
+    #
+    # def who_is_victor(self, repeat_num):
+    #     whos_turn = "red" if self.__is_red_turn else "black"
+    #     other_turn = "red" if not self.__is_red_turn else "black"
+    #     chessman = self.get_chessman_by_name("{0}_king".format(whos_turn))
+    #     if chessman != None:
+    #         if self.__history[other_turn]["repeat"] == repeat_num:
+    #             print("{0} is victor".format(whos_turn))
+    #             return True
+    #         else:
+    #             return False
+    #     else:
+    #         print("{0} is victor".format(other_turn))
+    #         return True
+
 
     def get_chessman(self, col_num, row_num):
         return self.__chessmans[col_num][row_num]
